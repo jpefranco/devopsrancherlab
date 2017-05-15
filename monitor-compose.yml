@@ -1,0 +1,51 @@
+version: '2'
+services:
+  nodeexporter:
+    image: prom/node-exporter
+    expose:
+    - '9100'
+    labels:
+      io.rancher.scheduler.global: 'true'
+  grafana:
+    image: ihavell/grafana:1.0.0
+    links:
+    - prometheus:prometheus
+    ports:
+    - 3000:3000/tcp
+    expose:
+    - '3000'
+  cadvisor:
+    image: google/cadvisor:v0.24.1
+    volumes:
+    - /:/rootfs:ro
+    - /var/run:/var/run:rw
+    - /sys:/sys:ro
+    - /var/lib/docker/:/var/lib/docker:ro
+    expose:
+    - '8080'
+    labels:
+      io.rancher.scheduler.global: 'true'
+  prometheus:
+    image: ihavell/prometheus:1.0.0
+    links:
+    - alertmanager:alertmanager
+    - nodeexporter:nodeexporter
+    - cadvisor:cadvisor
+    ports:
+    - 9090:9090/tcp
+    expose:
+    - '9090'
+    command:
+    - -config.file=/etc/prometheus/prometheus.yml
+    - -storage.local.path=/prometheus
+    - -alertmanager.url=http://alertmanager:9093
+    - -storage.local.memory-chunks=100000
+  alertmanager:
+    image: ihavell/alertmanager:1.0.0
+    ports:
+    - 9093:9093/tcp
+    expose:
+    - '9093'
+    command:
+    - -config.file=/etc/alertmanager/config.yml
+    - -storage.path=/alertmanager

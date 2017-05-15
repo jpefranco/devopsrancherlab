@@ -1,0 +1,15 @@
+version: '2'
+services:
+  nodeexporter:
+    start_on_create: true
+  grafana:
+    scale: 1
+    start_on_create: true
+  cadvisor:
+    start_on_create: true
+  prometheus:
+    scale: 1
+    start_on_create: true
+  alertmanager:
+    scale: 1
+    start_on_create: true
